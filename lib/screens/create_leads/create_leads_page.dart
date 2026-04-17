@@ -10,8 +10,9 @@ import 'package:leads/screens/create_leads/calendar_date_picker.dart'
 
 class CreateLeadsPage extends StatefulWidget {
   final List<Contact>? contacts;
+  final Lead? existingLead;
 
-  const CreateLeadsPage({super.key, this.contacts});
+  const CreateLeadsPage({super.key, this.contacts, this.existingLead});
 
   @override
   State<CreateLeadsPage> createState() => _CreateLeadsPageState();
@@ -31,6 +32,31 @@ class _CreateLeadsPageState extends State<CreateLeadsPage> {
     _detailsController = TextEditingController();
     _dateController = TextEditingController();
     _timeController = TextEditingController();
+
+    final lead = widget.existingLead;
+    if (lead != null) {
+      _titleController.text = lead.title;
+      _detailsController.text = lead.details;
+      _dateController.text =
+          '${lead.dateTime.day}/${lead.dateTime.month}/${lead.dateTime.year}';
+      _timeController.text =
+          '${lead.dateTime.hour.toString().padLeft(2, '0')}:${lead.dateTime.minute.toString().padLeft(2, '0')}';
+
+      final contacts = widget.contacts ?? [];
+      if (contacts.where((c) => c.id == lead.contactId).isNotEmpty) {
+        _selectedContact = contacts.firstWhere((c) => c.id == lead.contactId);
+      } else {
+        _selectedContact = Contact(
+          id: lead.contactId,
+          firstName: lead.contactName,
+          lastName: '',
+          phoneNumber: '',
+          phoneCode: '92',
+          email: '',
+          note: '',
+        );
+      }
+    }
   }
 
   @override
@@ -53,9 +79,9 @@ class _CreateLeadsPageState extends State<CreateLeadsPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Create Leads',
-          style: TextStyle(
+        title: Text(
+          widget.existingLead == null ? 'Create Leads' : 'Edit Lead',
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -330,32 +356,53 @@ class _CreateLeadsPageState extends State<CreateLeadsPage> {
 
                     final dateTime = DateTime(year, month, day, hour, minute);
 
-                    final newLead = Lead(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      title: _titleController.text,
-                      contactName: _selectedContact!.fullName,
-                      contactId: _selectedContact!.id,
-                      details: _detailsController.text,
-                      dateTime: dateTime,
-                      status: LeadStatus.pending,
-                    );
+                    final existingLead = widget.existingLead;
+                    if (existingLead != null) {
+                      final updatedLead = existingLead.copyWith(
+                        title: _titleController.text,
+                        contactName: _selectedContact!.fullName,
+                        contactId: _selectedContact!.id,
+                        details: _detailsController.text,
+                        dateTime: dateTime,
+                      );
 
-                    // Persist in shared store so dashboards reflect the new lead.
-                    LeadStore.instance.addLead(newLead);
+                      LeadStore.instance.upsertLead(updatedLead);
 
-                    // Create notification for new lead
-                    NotificationStore.instance.notifyNewLead(
-                      newLead.title,
-                      newLead.id,
-                    );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Lead updated successfully'),
+                          backgroundColor: Color(0xFFFC6060),
+                        ),
+                      );
+                      Navigator.of(context).pop(updatedLead);
+                    } else {
+                      final newLead = Lead(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        title: _titleController.text,
+                        contactName: _selectedContact!.fullName,
+                        contactId: _selectedContact!.id,
+                        details: _detailsController.text,
+                        dateTime: dateTime,
+                        status: LeadStatus.pending,
+                      );
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Lead saved successfully'),
-                        backgroundColor: Color(0xFFFC6060),
-                      ),
-                    );
-                    Navigator.of(context).pop(newLead);
+                      // Persist in shared store so dashboards reflect the new lead.
+                      LeadStore.instance.addLead(newLead);
+
+                      // Create notification for new lead
+                      NotificationStore.instance.notifyNewLead(
+                        newLead.title,
+                        newLead.id,
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Lead saved successfully'),
+                          backgroundColor: Color(0xFFFC6060),
+                        ),
+                      );
+                      Navigator.of(context).pop(newLead);
+                    }
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -373,9 +420,9 @@ class _CreateLeadsPageState extends State<CreateLeadsPage> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
+                child: Text(
+                  widget.existingLead == null ? 'Save' : 'Update',
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

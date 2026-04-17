@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:leads/models/lead.dart';
 import 'package:leads/models/contact.dart';
 import 'package:leads/data/notification_store.dart';
+import 'package:leads/screens/create_leads/create_leads_page.dart';
 
 class LeadDetailPage extends StatefulWidget {
   final Lead lead;
@@ -27,16 +28,18 @@ class LeadDetailPage extends StatefulWidget {
 
 class _LeadDetailPageState extends State<LeadDetailPage> {
   late Lead _lead;
+  Contact? _contact;
 
   @override
   void initState() {
     super.initState();
     _lead = widget.lead;
+    _contact = widget.contact;
   }
 
   Future<void> _makePhoneCall() async {
-    if (widget.contact == null) return;
-    final phoneNumber = widget.contact!.phoneCode + widget.contact!.phoneNumber;
+    if (_contact == null) return;
+    final phoneNumber = '+${_contact!.phoneCode}${_contact!.phoneNumber}';
     final uri = Uri(scheme: 'tel', path: phoneNumber);
     try {
       await launchUrl(uri);
@@ -50,8 +53,8 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
   }
 
   Future<void> _openWhatsApp() async {
-    if (widget.contact == null) return;
-    final phoneNumber = widget.contact!.phoneCode + widget.contact!.phoneNumber;
+    if (_contact == null) return;
+    final phoneNumber = '${_contact!.phoneCode}${_contact!.phoneNumber}';
     final uri = Uri.parse('https://wa.me/$phoneNumber');
     try {
       await launchUrl(uri);
@@ -65,7 +68,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
   }
 
   Future<void> _sendEmail() async {
-    if (widget.contact == null || widget.contact!.email.isEmpty) {
+    if (_contact == null || _contact!.email.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No email address available')),
@@ -73,7 +76,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
       }
       return;
     }
-    final uri = Uri(scheme: 'mailto', path: widget.contact!.email);
+    final uri = Uri(scheme: 'mailto', path: _contact!.email);
     try {
       await launchUrl(uri);
     } catch (e) {
@@ -320,9 +323,49 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
     );
   }
 
+  List<Contact> _availableContactsForEdit() {
+    final contacts = <Contact>[...?widget.assignableContacts];
+    if (_contact != null &&
+        contacts.where((c) => c.id == _contact!.id).isEmpty) {
+      contacts.add(_contact!);
+    }
+    return contacts;
+  }
+
+  Future<void> _editLead() async {
+    final contacts = _availableContactsForEdit();
+    if (contacts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No contacts available to edit this lead.'),
+          backgroundColor: Color(0xFFFC6060),
+        ),
+      );
+      return;
+    }
+
+    final updatedLead = await Navigator.of(context).push<Lead>(
+      MaterialPageRoute(
+        builder: (_) =>
+            CreateLeadsPage(contacts: contacts, existingLead: _lead),
+      ),
+    );
+
+    if (updatedLead != null && mounted) {
+      setState(() {
+        _lead = updatedLead;
+        if (contacts.where((c) => c.id == updatedLead.contactId).isNotEmpty) {
+          _contact = contacts.firstWhere((c) => c.id == updatedLead.contactId);
+        }
+      });
+      widget.onLeadUpdate(updatedLead);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isCompleted = _lead.status == LeadStatus.completed;
+    final bool canEdit = !isCompleted;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -342,19 +385,10 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
         ),
         centerTitle: true,
         actions: [
-          if (!isCompleted)
-            TextButton(
-              onPressed: () {
-                // TODO: Implement edit functionality
-              },
-              child: const Text(
-                'Edit',
-                style: TextStyle(
-                  color: Color(0xFFFC6060),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          if (canEdit)
+            IconButton(
+              onPressed: _editLead,
+              icon: const Icon(Icons.edit, color: Colors.black, size: 28),
             ),
         ],
       ),
@@ -438,7 +472,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 245, 245),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: const Color(0xFFFC6060),
@@ -468,7 +502,7 @@ class _LeadDetailPageState extends State<LeadDetailPage> {
                 Row(
                   spacing: 12,
                   children: [
-                    if (widget.contact != null) ...[
+                    if (_contact != null) ...[
                       GestureDetector(
                         onTap: _makePhoneCall,
                         child: _RoundActionIcon(icon: Icons.call, size: 18),
@@ -625,7 +659,7 @@ class _RoundActionIcon extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color.fromARGB(255, 255, 245, 245),
+        color: Colors.white,
         border: Border.all(color: const Color(0xFFFC6060), width: 1.5),
       ),
       child: Icon(icon, color: const Color(0xFFFC6060), size: size),
@@ -651,7 +685,7 @@ class _RoundSvgIcon extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color.fromARGB(255, 255, 245, 245),
+        color: Colors.white,
         border: Border.all(color: const Color(0xFFFC6060), width: 1.5),
       ),
       child: Center(

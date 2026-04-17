@@ -21,6 +21,8 @@ class TeamManagerHomePage extends StatefulWidget {
 }
 
 class _TeamManagerHomePageState extends State<TeamManagerHomePage> {
+  static const Color _settingsBackgroundColor = Colors.white;
+
   int _selectedNavIndex = 0;
   final List<Contact> _teamMembers = [];
   final List<Contact> _allContacts = [
@@ -207,34 +209,38 @@ class _TeamManagerHomePageState extends State<TeamManagerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = ValueListenableBuilder<List<Lead>>(
+      valueListenable: LeadStore.instance.leads,
+      builder: (context, leads, _) => _buildBody(leads),
+    );
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          _getAppBarTitle(),
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: _openGlobalSearch,
-          ),
-          const NotificationIconButton(),
-        ],
-      ),
-      body: SafeArea(
-        child: ValueListenableBuilder<List<Lead>>(
-          valueListenable: LeadStore.instance.leads,
-          builder: (context, leads, _) => _buildBody(leads),
-        ),
-      ),
+      backgroundColor: _selectedNavIndex == 3
+          ? _settingsBackgroundColor
+          : Colors.white,
+      appBar: _selectedNavIndex == 3
+          ? null
+          : AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              title: Text(
+                _getAppBarTitle(),
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black),
+                  onPressed: _openGlobalSearch,
+                ),
+                const NotificationIconButton(),
+              ],
+            ),
+      body: _selectedNavIndex == 3 ? bodyContent : SafeArea(child: bodyContent),
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedNavIndex,
         secondItemLabel: 'Team',

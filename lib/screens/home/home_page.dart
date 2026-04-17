@@ -26,6 +26,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+  static const Color _settingsBackgroundColor = Colors.white;
+
   int _selectedNavIndex = 0;
   bool _isExpanded = false;
   late AnimationController _animationController;
@@ -113,6 +115,10 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = _selectedNavIndex == 3
+        ? _buildBody()
+        : SafeArea(child: _buildBody());
+
     final rawFab = _buildFloatingActionButton();
     Widget? fab;
     if (rawFab != null) {
@@ -125,8 +131,10 @@ class _HomePageState extends State<HomePage>
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(child: _buildBody()),
+          backgroundColor: _selectedNavIndex == 3
+              ? _settingsBackgroundColor
+              : Colors.white,
+          body: bodyContent,
           bottomNavigationBar: BottomNavBar(
             selectedIndex: _selectedNavIndex,
             onTap: (index) {
@@ -333,18 +341,12 @@ class _HomePageState extends State<HomePage>
                           InkWell(
                             onTap: () async {
                               _toggleFABMenu();
-                              final newLead = await Navigator.of(context)
-                                  .push<Lead>(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          CreateLeadsPage(contacts: _contacts),
-                                    ),
-                                  );
-                              if (newLead != null && mounted) {
-                                setState(() {
-                                  _leads.add(newLead);
-                                });
-                              }
+                              await Navigator.of(context).push<Lead>(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      CreateLeadsPage(contacts: _contacts),
+                                ),
+                              );
                             },
                             borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(12),
