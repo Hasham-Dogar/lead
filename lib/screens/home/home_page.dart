@@ -115,9 +115,11 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
-    final bodyContent = _selectedNavIndex == 3
-        ? _buildBody()
-        : SafeArea(child: _buildBody());
+    final shouldWrapWithSafeArea =
+        _selectedNavIndex != 2 && _selectedNavIndex != 3;
+    final bodyContent = shouldWrapWithSafeArea
+        ? SafeArea(child: _buildBody())
+        : _buildBody();
 
     final rawFab = _buildFloatingActionButton();
     Widget? fab;
