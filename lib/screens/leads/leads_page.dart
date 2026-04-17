@@ -72,7 +72,12 @@ class LeadsPage extends StatelessWidget {
           const NotificationIconButton(),
         ],
       ),
-      body: LeadsListPage(leads: leads, contacts: contacts, showFAB: true),
+      body: LeadsListPage(
+        leads: leads,
+        contacts: contacts,
+        showFAB: true,
+        fabBottomOffset: 96,
+      ),
     );
   }
 }

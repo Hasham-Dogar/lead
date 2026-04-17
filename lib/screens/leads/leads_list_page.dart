@@ -11,6 +11,7 @@ class LeadsListPage extends StatefulWidget {
   final bool showFAB;
   final bool showTabs;
   final bool isManager;
+  final double fabBottomOffset;
 
   const LeadsListPage({
     super.key,
@@ -20,6 +21,7 @@ class LeadsListPage extends StatefulWidget {
     this.showFAB = false,
     this.showTabs = true,
     this.isManager = false,
+    this.fabBottomOffset = 24,
   });
 
   @override
@@ -147,7 +149,7 @@ class _LeadsListPageState extends State<LeadsListPage> {
         ),
         if (widget.showFAB)
           Positioned(
-            bottom: 24,
+            bottom: widget.fabBottomOffset,
             right: 24,
             child: FloatingActionButton(
               onPressed: () {

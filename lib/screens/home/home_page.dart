@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage>
     Widget? fab;
     if (rawFab != null) {
       if (_selectedNavIndex != 0) {
-        fab = Positioned(bottom: 72, right: 24, child: rawFab);
+        fab = Positioned(bottom: 96, right: 24, child: rawFab);
       } else {
         fab = rawFab;
       }
