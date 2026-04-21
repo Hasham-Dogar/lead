@@ -76,7 +76,7 @@ class LeadsPage extends StatelessWidget {
         leads: leads,
         contacts: contacts,
         showFAB: true,
-        fabBottomOffset: 80,
+        fabBottomOffset: 64,
       ),
     );
   }
