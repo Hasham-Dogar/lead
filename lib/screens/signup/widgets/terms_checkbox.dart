@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:leads/screens/terms/terms_and_conditions_page.dart';
 
 class TermsCheckbox extends StatefulWidget {
-  const TermsCheckbox({super.key});
+  const TermsCheckbox({super.key, this.value, this.onChanged});
+
+  final bool? value;
+  final ValueChanged<bool>? onChanged;
 
   @override
   State<TermsCheckbox> createState() => _TermsCheckboxState();
@@ -11,17 +14,28 @@ class TermsCheckbox extends StatefulWidget {
 class _TermsCheckboxState extends State<TermsCheckbox> {
   bool _agreedToTerms = false;
 
+  bool get _isControlled => widget.value != null;
+
+  bool get _effectiveValue => widget.value ?? _agreedToTerms;
+
+  void _handleChange(bool nextValue) {
+    if (!_isControlled) {
+      setState(() {
+        _agreedToTerms = nextValue;
+      });
+    }
+    widget.onChanged?.call(nextValue);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Checkbox(
-          value: _agreedToTerms,
+          value: _effectiveValue,
           onChanged: (value) {
-            setState(() {
-              _agreedToTerms = value ?? false;
-            });
+            _handleChange(value ?? false);
           },
           activeColor: const Color.fromARGB(255, 252, 96, 96),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),

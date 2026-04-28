@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:leads/screens/signup/signup_page.dart';
+import 'package:leads/screens/choose_role/choose_role_page.dart';
 
 class SignupLink extends StatelessWidget {
   const SignupLink({super.key});
@@ -28,7 +28,10 @@ class SignupLink extends StatelessWidget {
                 ..onTap = () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SignupPage()),
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const ChooseRolePage(forSignup: true),
+                    ),
                   );
                 },
             ),

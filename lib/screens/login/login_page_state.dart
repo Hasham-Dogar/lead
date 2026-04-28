@@ -56,6 +56,24 @@ class LoginPageState extends State<LoginPage> {
       return;
     }
 
+    final session = UserSessionStore.instance;
+    if (session.hasRegisteredUsers) {
+      final isValidUser = session.loginWithStoredCredentials(
+        email: email,
+        password: password,
+      );
+
+      if (!isValidUser) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid email or password'),
+            backgroundColor: Color(0xFFFC6060),
+          ),
+        );
+        return;
+      }
+    }
+
     // Show loading state
     setState(() {
       _isLoading = true;
@@ -68,9 +86,25 @@ class LoginPageState extends State<LoginPage> {
           _isLoading = false;
         });
 
-        // Navigate to role selection page
+        if (session.role == UserRole.teamManager) {
+          final showNoPlanDialog = !session.hasActivePaidPlan;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => TeamManagerHomePage(
+                showPlanActivationDialog: showNoPlanDialog,
+              ),
+            ),
+          );
+          return;
+        }
+
+        final shouldShowUnassignedDialog =
+            session.role == UserRole.member && !session.isMemberAssignedToTeam;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const ChooseRolePage()),
+          MaterialPageRoute(
+            builder: (context) =>
+                HomePage(showTeamAssignmentDialog: shouldShowUnassignedDialog),
+          ),
         );
       }
     });

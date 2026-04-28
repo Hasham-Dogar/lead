@@ -14,7 +14,9 @@ import 'package:leads/widgets/notification_icon_button.dart';
 import 'package:leads/widgets/search/global_search_delegate.dart';
 
 class TeamManagerHomePage extends StatefulWidget {
-  const TeamManagerHomePage({super.key});
+  const TeamManagerHomePage({super.key, this.showPlanActivationDialog = false});
+
+  final bool showPlanActivationDialog;
 
   @override
   State<TeamManagerHomePage> createState() => _TeamManagerHomePageState();
@@ -63,6 +65,105 @@ class _TeamManagerHomePageState extends State<TeamManagerHomePage> {
       note: '',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.showPlanActivationDialog) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _showNoActivePlanDialog();
+      });
+    }
+  }
+
+  Future<void> _showNoActivePlanDialog() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black38,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          backgroundColor: const Color(0xFFF2F2F7),
+          surfaceTintColor: const Color(0xFFF2F2F7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(34),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(26, 22, 26, 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(dialogContext),
+                    child: const Icon(
+                      Icons.close,
+                      size: 48,
+                      color: Color(0xFF3C3C43),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 108,
+                  color: Colors.black,
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Not Assigned Yet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Please Contact Support Team To Active Your Plan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Color(0xFF666666),
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 62,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFC6060),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _navigateToTotalLeads() {
     Navigator.of(context).push(
@@ -321,7 +422,7 @@ class _TeamManagerHomePageState extends State<TeamManagerHomePage> {
           showFAB: true,
         );
       case 3:
-        return const SettingsPage();
+        return const SettingsPage(isTeamManager: true);
       default:
         return _buildStatsGrid(leads);
     }

@@ -18,7 +18,9 @@ import 'package:leads/screens/settings/settings.dart';
 import 'package:leads/widgets/search/global_search_delegate.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.showTeamAssignmentDialog = false});
+
+  final bool showTeamAssignmentDialog;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -87,6 +89,100 @@ class _HomePageState extends State<HomePage>
         note: '',
       ),
     ]);
+
+    if (widget.showTeamAssignmentDialog) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _showNotAssignedDialog();
+      });
+    }
+  }
+
+  Future<void> _showNotAssignedDialog() async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black38,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          backgroundColor: const Color(0xFFF2F2F7),
+          surfaceTintColor: const Color(0xFFF2F2F7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(34),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(26, 22, 26, 26),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(dialogContext),
+                    child: const Icon(
+                      Icons.close,
+                      size: 48,
+                      color: Color(0xFF3C3C43),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 108,
+                  color: Colors.black,
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Not Assigned Yet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'You are not part of any team. Please contact your Team Manager to get access.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Color(0xFF666666),
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 62,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFC6060),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _onLeadsChanged() {

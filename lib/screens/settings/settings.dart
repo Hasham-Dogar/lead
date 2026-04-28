@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:leads/data/user_session_store.dart';
 import 'package:leads/screens/settings/profile.dart';
 import 'package:leads/screens/settings/change_password.dart';
 import 'package:leads/screens/settings/privacy.dart';
+import 'package:leads/screens/settings/subscription.dart';
 import 'package:leads/screens/settings/terms_conditions.dart';
 import 'package:leads/widgets/notification_icon_button.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({super.key, this.isTeamManager = false});
+
+  final bool isTeamManager;
 
   static const Color _accentColor = Color(0xFFFC6060);
   static const Color _pageBackgroundColor = Colors.white;
@@ -43,64 +47,80 @@ class SettingsPage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: AssetImage('assets/icons/team_manager.png'),
-                        fit: BoxFit.cover,
+            AnimatedBuilder(
+              animation: UserSessionStore.instance,
+              builder: (context, _) {
+                final activeUser = UserSessionStore.instance.activeUser;
+                final profileImagePath =
+                    activeUser?.profileImageAssetPath ??
+                    (isTeamManager
+                        ? 'assets/icons/team_manager.png'
+                        : 'assets/icons/member.png');
+                final fullName = activeUser?.fullName.trim() ?? '';
+                final email = activeUser?.email.trim() ?? '';
+                final displayName = fullName.isNotEmpty ? fullName : 'John Doe';
+                final displayEmail = email.isNotEmpty ? email : 'john@gmail.com';
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: AssetImage(profileImagePath),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'John Doe',
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              displayEmail,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF8E8E93),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileEditPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Edit',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            color: _accentColor,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          'John@gmail.com',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF8E8E93),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ProfileEditPage(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Edit',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _accentColor,
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: 18),
             const Divider(height: 1, thickness: 1, color: _dividerColor),
@@ -122,6 +142,16 @@ class SettingsPage extends StatelessWidget {
                 ).push(MaterialPageRoute(builder: (_) => const PrivacyPage()));
               },
             ),
+            if (isTeamManager)
+              _buildSettingsTile(
+                icon: Icons.subscriptions_outlined,
+                title: 'Subscription',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                  );
+                },
+              ),
             _buildSettingsTile(
               icon: Icons.description_outlined,
               title: 'Terms & Conditions',

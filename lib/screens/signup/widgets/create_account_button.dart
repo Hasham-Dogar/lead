@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 class CreateAccountButton extends StatelessWidget {
-  const CreateAccountButton({super.key});
+  const CreateAccountButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          // TODO: Implement account creation functionality
-        },
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFF6B6B),
           padding: const EdgeInsets.symmetric(vertical: 14),

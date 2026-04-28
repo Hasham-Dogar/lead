@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ConfirmPasswordInputField extends StatefulWidget {
-  const ConfirmPasswordInputField({super.key});
+  const ConfirmPasswordInputField({super.key, this.controller});
+
+  final TextEditingController? controller;
 
   @override
   State<ConfirmPasswordInputField> createState() =>
@@ -10,17 +12,21 @@ class ConfirmPasswordInputField extends StatefulWidget {
 
 class _ConfirmPasswordInputFieldState extends State<ConfirmPasswordInputField> {
   late TextEditingController _confirmPasswordController;
+  late bool _ownsController;
   bool _isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _confirmPasswordController = TextEditingController();
+    _ownsController = widget.controller == null;
+    _confirmPasswordController = widget.controller ?? TextEditingController();
   }
 
   @override
   void dispose() {
-    _confirmPasswordController.dispose();
+    if (_ownsController) {
+      _confirmPasswordController.dispose();
+    }
     super.dispose();
   }
 

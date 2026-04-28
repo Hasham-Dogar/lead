@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class FullnameInputField extends StatefulWidget {
-  const FullnameInputField({super.key});
+  const FullnameInputField({super.key, this.controller});
+
+  final TextEditingController? controller;
 
   @override
   State<FullnameInputField> createState() => _FullnameInputFieldState();
@@ -9,16 +11,20 @@ class FullnameInputField extends StatefulWidget {
 
 class _FullnameInputFieldState extends State<FullnameInputField> {
   late TextEditingController _fullnameController;
+  late bool _ownsController;
 
   @override
   void initState() {
     super.initState();
-    _fullnameController = TextEditingController();
+    _ownsController = widget.controller == null;
+    _fullnameController = widget.controller ?? TextEditingController();
   }
 
   @override
   void dispose() {
-    _fullnameController.dispose();
+    if (_ownsController) {
+      _fullnameController.dispose();
+    }
     super.dispose();
   }
 

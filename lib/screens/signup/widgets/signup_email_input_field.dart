@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SignupEmailInputField extends StatefulWidget {
-  const SignupEmailInputField({super.key});
+  const SignupEmailInputField({super.key, this.controller});
+
+  final TextEditingController? controller;
 
   @override
   State<SignupEmailInputField> createState() => _SignupEmailInputFieldState();
@@ -9,16 +11,20 @@ class SignupEmailInputField extends StatefulWidget {
 
 class _SignupEmailInputFieldState extends State<SignupEmailInputField> {
   late TextEditingController _emailController;
+  late bool _ownsController;
 
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController();
+    _ownsController = widget.controller == null;
+    _emailController = widget.controller ?? TextEditingController();
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    if (_ownsController) {
+      _emailController.dispose();
+    }
     super.dispose();
   }
 
